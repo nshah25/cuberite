@@ -1718,7 +1718,7 @@ void cWorld::SetBlockMeta(Vector3i a_BlockPos, NIBBLETYPE a_MetaData)
 
 
 
-NIBBLETYPE cWorld::GetBlockSkyLight(Vector3i a_BlockPos)
+NIBBLETYPE cWorld::GetBlockSkyLight(Vector3i a_BlockPos) const
 {
 	return m_ChunkMap.GetBlockSkyLight(a_BlockPos);
 }
@@ -1727,7 +1727,7 @@ NIBBLETYPE cWorld::GetBlockSkyLight(Vector3i a_BlockPos)
 
 
 
-NIBBLETYPE cWorld::GetBlockBlockLight(Vector3i a_BlockPos)
+NIBBLETYPE cWorld::GetBlockBlockLight(Vector3i a_BlockPos) const
 {
 	return m_ChunkMap.GetBlockBlockLight(a_BlockPos);
 }
@@ -1736,7 +1736,7 @@ NIBBLETYPE cWorld::GetBlockBlockLight(Vector3i a_BlockPos)
 
 
 
-bool cWorld::GetBlockTypeMeta(Vector3i a_BlockPos, BLOCKTYPE & a_BlockType, NIBBLETYPE & a_BlockMeta)
+bool cWorld::GetBlockTypeMeta(Vector3i a_BlockPos, BLOCKTYPE & a_BlockType, NIBBLETYPE & a_BlockMeta) const
 {
 	return m_ChunkMap.GetBlockTypeMeta(a_BlockPos, a_BlockType, a_BlockMeta);
 }
@@ -1745,7 +1745,7 @@ bool cWorld::GetBlockTypeMeta(Vector3i a_BlockPos, BLOCKTYPE & a_BlockType, NIBB
 
 
 
-bool cWorld::GetBlockInfo(Vector3i a_BlockPos, BLOCKTYPE & a_BlockType, NIBBLETYPE & a_Meta, NIBBLETYPE & a_SkyLight, NIBBLETYPE & a_BlockLight)
+bool cWorld::GetBlockInfo(Vector3i a_BlockPos, BLOCKTYPE & a_BlockType, NIBBLETYPE & a_Meta, NIBBLETYPE & a_SkyLight, NIBBLETYPE & a_BlockLight) const
 {
 	return m_ChunkMap.GetBlockInfo(a_BlockPos, a_BlockType, a_Meta, a_SkyLight, a_BlockLight);
 }
@@ -2002,9 +2002,14 @@ UInt32 cWorld::SpawnEnderCrystal(Vector3d a_Pos, bool a_ShowBottom)
 
 void cWorld::PlaceBlock(const Vector3i a_Position, const BLOCKTYPE a_BlockType, const NIBBLETYPE a_BlockMeta)
 {
+	BLOCKTYPE BlockType;
+	NIBBLETYPE BlockMeta;
+	GetBlockTypeMeta(a_Position, BlockType, BlockMeta);
+
 	SetBlock(a_Position, a_BlockType, a_BlockMeta);
 
 	cChunkInterface ChunkInterface(GetChunkMap());
+	cBlockHandler::For(BlockType).OnBroken(ChunkInterface, *this, a_Position, BlockType, BlockMeta, nullptr);
 	cBlockHandler::For(a_BlockType).OnPlaced(ChunkInterface, *this, a_Position, a_BlockType, a_BlockMeta);
 }
 
@@ -2066,7 +2071,7 @@ cItems cWorld::PickupsFromBlock(Vector3i a_BlockPos, const cEntity * a_Digger, c
 
 
 
-void cWorld::SendBlockTo(int a_X, int a_Y, int a_Z, cPlayer & a_Player)
+void cWorld::SendBlockTo(int a_X, int a_Y, int a_Z, const cPlayer & a_Player)
 {
 	m_ChunkMap.SendBlockTo(a_X, a_Y, a_Z, a_Player);
 }
